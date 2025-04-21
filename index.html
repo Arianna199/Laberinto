@@ -2,36 +2,42 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Pelotita esquiva una pared</title>
+    <title>Pelotita esquiva pared larga</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   </head>
   <body>
     <a-scene>
 
-      <!-- Cámara desde arriba -->
+      <!-- Cámara superior -->
       <a-entity camera look-controls position="0 10 0" rotation="-90 0 0"></a-entity>
 
-      <!-- Suelo -->
-      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#D0F0C0"></a-plane>
+      <!-- Plataforma (suelo) -->
+      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#ACE6A3"></a-plane>
 
       <!-- Pelotita -->
-      <a-sphere id="pelotita" position="-3 0.3 0" radius="0.3" color="red"></a-sphere>
+      <a-sphere id="pelotita" position="-4 0.3 0" radius="0.3" color="red"></a-sphere>
 
       <!-- Meta -->
-      <a-box id="meta" position="3 0.5 0" depth="1" height="1" width="1" color="green"></a-box>
+      <a-box id="meta" position="4 0.5 0" depth="1" height="1" width="1" color="green"></a-box>
 
-      <!-- Pared bloqueando el camino directo -->
-      <a-box position="0 0.5 0" depth="1" height="1" width="1" color="black"></a-box>
+      <!-- Pared rectangular (larga) en el centro -->
+      <a-box position="0 0.5 0" depth="0.5" height="1" width="6" color="black"></a-box>
 
     </a-scene>
 
     <script>
       const pelotita = document.querySelector('#pelotita');
-      const pared = new Set(["0,0"]); // coordenadas de la pared
-      const metaCoord = "3,0";
+      const pared = new Set();
+
+      // Creamos una pared larga (6 bloques de ancho) en el centro
+      for (let x = -3; x <= 3; x++) {
+        pared.add(`${x},0`);
+      }
+
+      const metaCoord = "4,0";
       const visitados = new Set();
 
-      let x = -3, z = 0;
+      let x = -4, z = 0;
 
       function mover() {
         const posiblesMovs = [
@@ -45,11 +51,12 @@
           .map(([dx, dz]) => [x + dx, z + dz])
           .filter(([nx, nz]) => {
             const key = `${nx},${nz}`;
-            return !pared.has(key) && !visitados.has(key);
+            const dentroDePlataforma = Math.abs(nx) <= 5 && Math.abs(nz) <= 5;
+            return !pared.has(key) && !visitados.has(key) && dentroDePlataforma;
           });
 
         if (opciones.length === 0) {
-          x = -3; z = 0;
+          x = -4; z = 0;
           visitados.clear();
         } else {
           let [nx, nz] = opciones[Math.floor(Math.random() * opciones.length)];
@@ -61,11 +68,11 @@
         pelotita.setAttribute('position', `${x} 0.3 ${z}`);
 
         if (`${x},${z}` === metaCoord) {
-          alert("¡La pelotita llegó a la meta esquivando la pared! 🎉");
+          alert("¡La pelotita llegó a la meta rodeando la pared! 🎉");
         }
       }
 
-      setInterval(mover, 1000);
+      setInterval(mover, 800);
     </script>
   </body>
 </html>
