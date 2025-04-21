@@ -2,11 +2,14 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Laberinto con IA</title>
+    <title>Laberinto con IA visible</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   </head>
   <body>
     <a-scene>
+
+      <!-- Cámara elevada mirando hacia abajo -->
+      <a-entity camera look-controls position="0 10 -5" rotation="-90 0 0"></a-entity>
 
       <!-- Suelo -->
       <a-plane position="0 0 -5" rotation="-90 0 0" width="10" height="10" color="#D0F0C0"></a-plane>
@@ -14,17 +17,15 @@
       <!-- Pelotita (agente) -->
       <a-sphere id="pelotita" position="0 0.3 -5" radius="0.3" color="red"></a-sphere>
 
-      <!-- Meta -->
+      <!-- Meta (meta verde a donde debe llegar) -->
       <a-box id="meta" position="3 0.5 -8" depth="1" height="1" width="1" color="green"></a-box>
 
-      <!-- Paredes -->
+      <!-- Paredes del laberinto -->
       <a-box position="0 0.5 -6" depth="1" height="1" width="1" color="#333"></a-box>
       <a-box position="1 0.5 -6" depth="1" height="1" width="1" color="#333"></a-box>
       <a-box position="2 0.5 -6" depth="1" height="1" width="1" color="#333"></a-box>
       <a-box position="1 0.5 -7" depth="1" height="1" width="1" color="#333"></a-box>
 
-      <!-- Cámara -->
-      <a-camera position="0 1.6 0"></a-camera>
     </a-scene>
 
     <script>
@@ -34,7 +35,7 @@
       let x = 0, z = -5;
       const visitados = new Set();
       const paredes = new Set([
-        "0,-6", "1,-6", "2,-6", "1,-7" // coordenadas de obstáculos
+        "0,-6", "1,-6", "2,-6", "1,-7"
       ]);
       const metaCoord = "3,-8";
 
@@ -51,7 +52,7 @@
           });
 
         if (posibles.length === 0) {
-          // Si no hay más caminos buenos, reinicia
+          // Reiniciar si no hay más caminos
           x = 0;
           z = -5;
           visitados.clear();
