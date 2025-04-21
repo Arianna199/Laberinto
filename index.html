@@ -2,40 +2,74 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Pelotita con IA en A-Frame</title>
+    <title>Laberinto con IA</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   </head>
   <body>
     <a-scene>
 
       <!-- Suelo -->
-      <a-plane position="0 0 -5" rotation="-90 0 0" width="10" height="10" color="#7BC8A4"></a-plane>
+      <a-plane position="0 0 -5" rotation="-90 0 0" width="10" height="10" color="#D0F0C0"></a-plane>
 
-      <!-- Pelotita -->
-      <a-sphere id="pelotita" position="0 0.5 -5" radius="0.3" color="red"></a-sphere>
+      <!-- Pelotita (agente) -->
+      <a-sphere id="pelotita" position="0 0.3 -5" radius="0.3" color="red"></a-sphere>
+
+      <!-- Meta -->
+      <a-box id="meta" position="3 0.5 -8" depth="1" height="1" width="1" color="green"></a-box>
+
+      <!-- Paredes -->
+      <a-box position="0 0.5 -6" depth="1" height="1" width="1" color="#333"></a-box>
+      <a-box position="1 0.5 -6" depth="1" height="1" width="1" color="#333"></a-box>
+      <a-box position="2 0.5 -6" depth="1" height="1" width="1" color="#333"></a-box>
+      <a-box position="1 0.5 -7" depth="1" height="1" width="1" color="#333"></a-box>
 
       <!-- Cámara -->
       <a-camera position="0 1.6 0"></a-camera>
     </a-scene>
 
     <script>
-      // Movimiento básico aleatorio
       const pelotita = document.querySelector('#pelotita');
-      let x = 0;
-      let z = -5;
+      const meta = document.querySelector('#meta');
 
-      function moverPelotita() {
-        const direccion = Math.floor(Math.random() * 4); // 0=izq, 1=der, 2=arriba, 3=abajo
+      let x = 0, z = -5;
+      const visitados = new Set();
+      const paredes = new Set([
+        "0,-6", "1,-6", "2,-6", "1,-7" // coordenadas de obstáculos
+      ]);
+      const metaCoord = "3,-8";
 
-        if (direccion === 0) x -= 1;
-        else if (direccion === 1) x += 1;
-        else if (direccion === 2) z -= 1;
-        else if (direccion === 3) z += 1;
+      function mover() {
+        let direcciones = [
+          [1, 0], [-1, 0], [0, -1], [0, 1]
+        ];
 
-        pelotita.setAttribute('position', `${x} 0.5 ${z}`);
+        let posibles = direcciones
+          .map(([dx, dz]) => [x + dx, z + dz])
+          .filter(([nx, nz]) => {
+            const clave = `${nx},${nz}`;
+            return !visitados.has(clave) && !paredes.has(clave);
+          });
+
+        if (posibles.length === 0) {
+          // Si no hay más caminos buenos, reinicia
+          x = 0;
+          z = -5;
+          visitados.clear();
+        } else {
+          let [nx, nz] = posibles[Math.floor(Math.random() * posibles.length)];
+          x = nx;
+          z = nz;
+          visitados.add(`${x},${z}`);
+        }
+
+        pelotita.setAttribute('position', `${x} 0.3 ${z}`);
+
+        if (`${x},${z}` === metaCoord) {
+          alert("¡La pelotita llegó a la meta! 🎉");
+        }
       }
 
-      setInterval(moverPelotita, 1000); // Cada 1 segundo se mueve
+      setInterval(mover, 1000);
     </script>
   </body>
 </html>
