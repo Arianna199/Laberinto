@@ -2,64 +2,74 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Pelotita esquiva pared larga</title>
+    <title>Laberinto con pelotita IA</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   </head>
   <body>
     <a-scene>
 
-      <!-- Cámara superior -->
-      <a-entity camera look-controls position="0 10 0" rotation="-90 0 0"></a-entity>
+      <!-- Cámara desde arriba -->
+      <a-entity camera look-controls position="0 12 0" rotation="-90 0 0"></a-entity>
 
       <!-- Plataforma (suelo) -->
-      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#ACE6A3"></a-plane>
+      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#E0F7D4"></a-plane>
 
       <!-- Pelotita -->
-      <a-sphere id="pelotita" position="-4 0.3 0" radius="0.3" color="red"></a-sphere>
+      <a-sphere id="pelotita" position="-4 0.3 -4" radius="0.3" color="red"></a-sphere>
 
       <!-- Meta -->
-      <a-box id="meta" position="4 0.5 0" depth="1" height="1" width="1" color="green"></a-box>
+      <a-box id="meta" position="4 0.5 4" depth="1" height="1" width="1" color="green"></a-box>
 
-      <!-- Pared rectangular (larga) en el centro -->
-      <a-box position="0 0.5 0" depth="0.5" height="1" width="6" color="black"></a-box>
+      <!-- Paredes del laberinto -->
+      <a-box position="-3 0.5 -4" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="-2 0.5 -4" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="-1 0.5 -4" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="-1 0.5 -3" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="-1 0.5 -2" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="0 0.5 -2" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="1 0.5 -2" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="1 0.5 -1" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="1 0.5 0" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="2 0.5 0" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="3 0.5 0" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="3 0.5 1" width="1" height="1" depth="1" color="black"></a-box>
+      <a-box position="3 0.5 2" width="1" height="1" depth="1" color="black"></a-box>
 
     </a-scene>
 
     <script>
       const pelotita = document.querySelector('#pelotita');
-      const pared = new Set();
+      const metaCoord = "4,4";
 
-      // Creamos una pared larga (6 bloques de ancho) en el centro
-      for (let x = -3; x <= 3; x++) {
-        pared.add(`${x},0`);
-      }
+      const pared = new Set([
+        "-3,-4", "-2,-4", "-1,-4", "-1,-3", "-1,-2",
+        "0,-2", "1,-2", "1,-1", "1,0", "2,0", "3,0",
+        "3,1", "3,2"
+      ]);
 
-      const metaCoord = "4,0";
       const visitados = new Set();
 
-      let x = -4, z = 0;
+      let x = -4, z = -4;
 
       function mover() {
-        const posiblesMovs = [
-          [1, 0],  // derecha
-          [0, 1],  // arriba
-          [0, -1], // abajo
-          [-1, 0]  // izquierda
+        const posibles = [
+          [1, 0], [-1, 0], [0, 1], [0, -1]
         ];
 
-        let opciones = posiblesMovs
+        let caminos = posibles
           .map(([dx, dz]) => [x + dx, z + dz])
           .filter(([nx, nz]) => {
             const key = `${nx},${nz}`;
-            const dentroDePlataforma = Math.abs(nx) <= 5 && Math.abs(nz) <= 5;
-            return !pared.has(key) && !visitados.has(key) && dentroDePlataforma;
+            const dentro = Math.abs(nx) <= 5 && Math.abs(nz) <= 5;
+            return dentro && !pared.has(key) && !visitados.has(key);
           });
 
-        if (opciones.length === 0) {
-          x = -4; z = 0;
+        if (caminos.length === 0) {
+          x = -4;
+          z = -4;
           visitados.clear();
         } else {
-          let [nx, nz] = opciones[Math.floor(Math.random() * opciones.length)];
+          const [nx, nz] = caminos[Math.floor(Math.random() * caminos.length)];
           x = nx;
           z = nz;
           visitados.add(`${x},${z}`);
@@ -68,7 +78,7 @@
         pelotita.setAttribute('position', `${x} 0.3 ${z}`);
 
         if (`${x},${z}` === metaCoord) {
-          alert("¡La pelotita llegó a la meta rodeando la pared! 🎉");
+          alert("¡La pelotita llegó a la meta 🎉!");
         }
       }
 
